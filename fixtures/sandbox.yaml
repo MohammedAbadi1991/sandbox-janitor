@@ -1,0 +1,9 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Sandbox Janitor demo fixture. One free SSM parameter, standing in for a real experiment.
+Resources:
+  Marker:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /janitor-demo/${AWS::StackName}
+      Type: String
+      Value: demo
