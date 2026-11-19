@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   Sandbox Janitor - an agent on the Amazon Bedrock AgentCore harness that
-  deletes expired sandbox CloudFormation stacks, and five layers of controls
+  deletes expired sandbox CloudFormation stacks, and six controls
   that hold when the model is talked out of its rules.
 
 Parameters:

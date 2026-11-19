@@ -1,6 +1,6 @@
 # Sandbox Janitor
 
-An AI agent that is allowed to delete infrastructure, and the five layers of controls that decide what it can delete.
+An AI agent that is allowed to delete infrastructure, and the six controls that decide what it can delete.
 
 Sandbox Janitor runs on the Amazon Bedrock AgentCore harness. Its one job is to remove CloudFormation stacks that have outlived the lifetime their owner gave them:
 
@@ -39,20 +39,7 @@ The whole system is one CloudFormation template.
 
 A rule that exists only in the prompt is a request. Each rule here is enforced at least once below the model.
 
-```mermaid
-flowchart LR
-  U[Requester] --> H
-  subgraph H[AgentCore harness]
-    G[1 Guardrail<br/>prompt attack, denied topics] --> M[Model<br/>system prompt, 5 tools only]
-  end
-  M -->|request_human_approval| O[Operator<br/>sees facts from AWS]
-  O -->|writes approval row| A[(Approvals table)]
-  M -->|MCP tool call| GW[2 AgentCore Gateway<br/>Cedar policies, default deny]
-  GW --> L[3 Tool function<br/>deterministic checks]
-  L -->|consume approval| A
-  L -->|DeleteStack| I[4 IAM<br/>tag conditions]
-  I --> C[5 CloudFormation<br/>termination protection]
-```
+![Architecture: a request passes the guardrail, the model with its tool allow-list, the gateway policy, the tool checks, human approval and IAM before a stack is deleted](docs/architecture.png)
 
 | Rule | Prompt | Guardrail | Tool allow-list | Gateway policy (Cedar) | Tool checks | Human approval | IAM |
 |---|---|---|---|---|---|---|---|
@@ -168,6 +155,8 @@ APPROVAL REQUEST  The agent wants to delete one stack.
   Tags       {"cleanup-after":"1m","owner":"dana"}
   Approve deleting this stack? [y/N]
 ```
+
+![A real session: listing stacks, an approved delete, and a refused request to delete a production stack](docs/terminal.png)
 
 To run the red-team suite, deploy with the test role and probe, then:
 

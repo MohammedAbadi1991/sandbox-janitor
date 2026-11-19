@@ -1,7 +1,7 @@
 {
   "name": "sandbox-janitor",
   "version": "1.0.0",
-  "description": "An agent on the Amazon Bedrock AgentCore harness that deletes expired sandbox stacks, with five layers of controls and a red-team suite that measures them.",
+  "description": "An agent on the Amazon Bedrock AgentCore harness that deletes expired sandbox stacks, with six layered controls and a red-team suite that measures them.",
   "scripts": {
     "test": "node --test test/rules.test.mjs",
     "chat": "node bin/janitor.mjs",

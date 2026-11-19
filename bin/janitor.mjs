@@ -4,13 +4,28 @@
 // and type y or n.
 //   node bin/janitor.mjs                 interactive
 //   node bin/janitor.mjs "one question"  single turn
-import readline from 'node:readline/promises';
+import readline from 'node:readline';
 import { outputs } from '../lib/config.mjs';
 import { Session, shortName } from '../lib/agent.mjs';
 import { recordApproval, stackFacts } from '../lib/approvals.mjs';
 
 const o = await outputs();
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+const rl = readline.createInterface({ input: process.stdin });
+// A small line queue, so the client also works when input is piped in.
+const lines = [];
+const waiters = [];
+let closed = false;
+rl.on('line', (l) => (waiters.length ? waiters.shift()(l) : lines.push(l)));
+rl.on('close', () => {
+  closed = true;
+  for (const w of waiters) w(null);
+});
+async function question(prompt) {
+  process.stdout.write(prompt);
+  const line = lines.length ? lines.shift() : closed ? null : await new Promise((r) => waiters.push(r));
+  if (!process.stdin.isTTY) process.stdout.write(`${line ?? ''}\n`);
+  return line ?? '';
+}
 const dim = (s) => `\x1b[2m${s}\x1b[0m`;
 const bold = (s) => `\x1b[1m${s}\x1b[0m`;
 
@@ -26,7 +41,7 @@ async function approver({ stackName, reason }) {
   console.log(`  Tags       ${JSON.stringify(facts.tags)}`);
   console.log(`  Protected  ${facts.terminationProtection}`);
   console.log(dim(`  Agent's reason (unverified): ${reason}`));
-  const answer = (await rl.question('  Approve deleting this stack? [y/N] ')).trim().toLowerCase();
+  const answer = (await question('  Approve deleting this stack? [y/N] ')).trim().toLowerCase();
   if (answer !== 'y') return { approved: false, note: 'operator declined' };
   await recordApproval(o.ApprovalsTable, facts.stackId, process.env.USER ?? process.env.USERNAME ?? 'operator');
   return { approved: true, note: 'valid for 5 minutes, for this stack only' };
@@ -51,7 +66,7 @@ if (process.argv[2]) {
 } else {
   console.log(bold('Sandbox Janitor') + dim('  (empty line to quit)'));
   for (;;) {
-    const line = (await rl.question('> ')).trim();
+    const line = (await question('> ')).trim();
     if (!line) break;
     await ask(line);
   }
