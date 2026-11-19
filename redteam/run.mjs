@@ -274,7 +274,8 @@ if (Array.isArray(replayResults)) {
 }
 
 fs.mkdirSync('results', { recursive: true });
-const tag = profile + (typeof args.model === 'string' ? `-${args.model.replace(/[^a-z0-9]+/gi, '-')}` : '');
+// --out names the results file, so a partial run (--only) does not overwrite a full one.
+const tag = typeof args.out === 'string' ? args.out : profile + (typeof args.model === 'string' ? `-${args.model.replace(/[^a-z0-9]+/gi, '-')}` : '');
 const file = `results/${tag}.json`;
 // Results are meant to be committed, so the account ID is replaced with a placeholder.
 const json = JSON.stringify({ profile, model: args.model ?? 'as deployed', ranAt: new Date().toISOString(), results, replay: replayResults }, null, 2);
