@@ -142,7 +142,7 @@ Requirements: an AWS account with Amazon Nova Pro enabled in `us-east-1`, AWS CL
 ```bash
 npm install
 scripts/deploy.sh                  # the agent
-scripts/fixtures.sh up             # eight demo stacks; wait one minute
+scripts/fixtures.sh up             # ten demo stacks; wait one minute
 npm run chat                       # talk to it
 ```
 
